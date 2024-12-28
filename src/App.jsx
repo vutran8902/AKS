@@ -5,6 +5,8 @@ import CreditCheck from './CreditCheck';
 function App() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const resultsPerPage = 10;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedKeywords, setSelectedKeywords] = useState([]);
@@ -148,58 +150,82 @@ function App() {
 
   return (
     <div className="app">
-      <div className="hero-section">
-        <h1>Amazon Keyword Tool</h1>
-        <p className="subtitle">
-          Find what people are searching for on Amazon, and<br />
-          align your product listings with those terms.
-        </p>
-        
-        <div className="search-options">
-          <div className="search-types">
-            <span className="active">Related Keywords</span>
-          </div>
+      <div className="main-content">
+        <div className="hero-section">
+          <h1>Amazon Keyword Tool</h1>
+          <p className="subtitle">
+            Find what people are searching for on Amazon, and<br />
+            align your product listings with those terms.
+          </p>
           
-          <div className="search-container">
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Enter keyword"
-              className="search-input"
-            />
-            <button onClick={handleSearch} disabled={loading} className="search-button">
-              {loading ? 'Searching...' : 'Find keywords'}
-            </button>
-          </div>
+          <div className="search-options">
+            <div className="search-types">
+              <span className="active">Related Keywords</span>
+            </div>
+            
+            <div className="search-container">
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                placeholder="Enter keyword"
+                className="search-input"
+              />
+              <button onClick={handleSearch} disabled={loading} className="search-button">
+                {loading ? 'Searching...' : 'Find keywords'}
+              </button>
+            </div>
 
-          {error && <div className="maintenance-notice">
-            <span className="notice-icon">ⓘ</span>
-            {error}
-          </div>}
+            {error && <div className="maintenance-notice">
+              <span className="notice-icon">ⓘ</span>
+              {error}
+            </div>}
+          </div>
         </div>
-      </div>
 
-      <h2 className="results-title">Find the best keyword ideas</h2>
+        <h2 className="results-title">Find the best keyword ideas</h2>
 
-      <div className="results">
-        {results.map((result, index) => (
-          <div 
-            key={index} 
-            className="result-item"
-            onClick={() => {
-              if (!selectedKeywords.some(kw => kw.keyword === result.keyword)) {
-                setSelectedKeywords(prev => [
-                  ...prev,
-                  { keyword: result.keyword, volume: result.volume }
-                ]);
-              }
-            }}
-          >
-            <span className="keyword">{result.keyword}</span>
-            <span className="volume">{result.volume} searches/month</span>
-          </div>
-        ))}
+        <div className="results">
+          {results
+            .slice((currentPage - 1) * resultsPerPage, currentPage * resultsPerPage)
+            .map((result, index) => (
+              <div 
+                key={index} 
+                className="result-item"
+                onClick={() => {
+                  if (!selectedKeywords.some(kw => kw.keyword === result.keyword)) {
+                    setSelectedKeywords(prev => [
+                      ...prev,
+                      { keyword: result.keyword, volume: result.volume }
+                    ]);
+                  }
+                }}
+              >
+                <span className="keyword">{result.keyword}</span>
+                <span className="volume">{result.volume} searches/month</span>
+              </div>
+            ))}
+          {results.length > resultsPerPage && (
+            <div className="pagination">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <span>Page {currentPage}</span>
+              <button
+                onClick={() => setCurrentPage(prev => 
+                  Math.min(Math.ceil(results.length / resultsPerPage), prev + 1)
+                )}
+                disabled={currentPage === Math.ceil(results.length / resultsPerPage)}
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </div>
       
       <StickyNote />
