@@ -44,7 +44,7 @@ function App() {
     if (window.Softr) {
       getUserEmail();
     } else {
-      setError('This app must be accessed through Softr');
+      setError('You must log in to use this app');
     }
   }, []);
 
