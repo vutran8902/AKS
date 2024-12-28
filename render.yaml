@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: azse
+    env: node
+    buildCommand: npm run build
+    startCommand: npm run preview
+    staticPublishPath: ./dist
+    envVars:
+      - key: VITE_API_KEY
+        fromFile: .env
